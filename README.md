@@ -134,3 +134,24 @@ O padrão Strategy usa 3 tipos de classe:
 O Contexto não precisa conhecer os vários tipos de implementações possíveis, nem testar com `switch` ou `if` qual o comportamento a ser usado. O Contexto usa a interface de Estratégia, que é implementada por classes concretas.
 
 Leitura complementar sobre o padrão Strategy: https://refactoring.guru/design-patterns/strategy 
+
+# Chain of Responsibility
+
+## Criando a calculadora de descontos
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class CalculadoraDeDescontos
+{
+    public function calculaDescontos(Orcamento $orcamento) : float
+    {
+        if ($orcamento->quantidadeItens > 5) {
+            return $orcamento->valor * 0.1;
+        }
+
+        return 0;
+    }
+}
+```
