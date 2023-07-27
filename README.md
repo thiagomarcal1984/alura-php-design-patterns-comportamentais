@@ -155,3 +155,28 @@ class CalculadoraDeDescontos
     }
 }
 ```
+## Aplicando mais de um desconto
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class CalculadoraDeDescontos
+{
+    public function calculaDescontos(Orcamento $orcamento) : float
+    {
+        if ($orcamento->quantidadeItens > 5) {
+            return $orcamento->valor * 0.1;
+        }
+
+        if ($orcamento->valor > 500) {
+            return $orcamento->valor * 0.05;
+        }
+
+        return 0;
+    }
+}
+```
+Problemas encontrados:
+1. O código acima não aplica os dois descontos caso o valor seja maior que 500 e a quantidade seja maior que 5.
+2. A ordem para a aplicação dos descontos importa. Então, é complexo aplicar vários if/switch/strategy para estabelecer o desconto que será aplicado.
