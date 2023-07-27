@@ -29,3 +29,32 @@ Para iniciar o projeto, simplesmente criamos o arquivo `composer.json` com as in
 }
 ```
 Depois de criar o arquivo `composer.json`, execute o comando `composer dump-autoload` para gerar os arquivos PHP da pasta `vendor`.
+
+## Aplicando impostos
+Os problemas: 
+1. o método `calcula` na classe `CalculadoraDeImpostos` pode crescer muito se mais tipos de imposto forem criados.
+2. O método `calcula` precisa funcionar, mesmo que seja fornecido um tipo de imposto inexistente.
+
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class CalculadoraDeImpostos
+{
+    public function calcula(Orcamento $orcamento, string $nomeImposto) : float
+    {
+        switch ($nomeImposto) {
+            case 'ICMS':
+                // Retorna 10% do valor do orçamento.
+                return $orcamento->valor * 0.1;
+                break;
+            
+            case 'ISS':
+                return $orcamento->valor * 0.06;
+                break;
+        }
+    }
+}
+
+```
