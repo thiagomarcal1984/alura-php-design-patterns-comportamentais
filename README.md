@@ -1,5 +1,5 @@
 # Padrões comportamentais (Gang of Four)
-- [ ] Chain of Responsibility
+- [x] Chain of Responsibility
 - [ ] Command
 - [ ] Interpreter
 - [ ] Iterator
@@ -296,3 +296,13 @@ class CalculadoraDeDescontos
 }
 ```
 > Note que a `CalculadoraDeDescontos` determina qual é a ordem de aplicação do desconto (primeiro os objetos de desconto mais internos retornam valores, depois os descontos mais externos são aplicados).
+
+## Explicando o padrão
+Fonte: https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern
+
+Há 3 tipos de classes:
+1. Sender: requisita do manipulador o retorno da cadeia de receptores;
+2. Manipulador (Handler): é uma superclasse dos receptores concretos, que tem um método abstrato para chamar o próximo receptor da cadeia;
+3. Receptor: executa sua operação e chama o próximo receptor para continuar a atender a requisição.
+
+Leitura complementar sobre o padrão Chain of Responsibility: https://refactoring.guru/design-patterns/chain-of-responsibility
