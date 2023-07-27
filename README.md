@@ -180,3 +180,6 @@ class CalculadoraDeDescontos
 Problemas encontrados:
 1. O código acima não aplica os dois descontos caso o valor seja maior que 500 e a quantidade seja maior que 5.
 2. A ordem para a aplicação dos descontos importa. Então, é complexo aplicar vários if/switch/strategy para estabelecer o desconto que será aplicado.
+
+## Strategy resolve
+Os percentuais de desconto poderiam ser delegados para uma implementação do padrão Strategy, mas a ordem e sequência dos descontos ainda precisa ser testada. Logo o padrão Strategy não soluciona o problema da calculadora de descontos.
