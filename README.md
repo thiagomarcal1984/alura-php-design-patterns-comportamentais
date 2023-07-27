@@ -183,3 +183,116 @@ Problemas encontrados:
 
 ## Strategy resolve
 Os percentuais de desconto poderiam ser delegados para uma implementação do padrão Strategy, mas a ordem e sequência dos descontos ainda precisa ser testada. Logo o padrão Strategy não soluciona o problema da calculadora de descontos.
+
+## Criando a Chain of Responsibility
+```php
+// Descontos\Desconto.php
+<?php
+
+namespace Alura\DesignPattern\Descontos;
+
+use Alura\DesignPattern\Orcamento;
+
+abstract class Desconto
+{
+    protected ?Desconto $proximoDesconto;
+
+    public function __construct(?Desconto $proximoDesconto)
+    {
+        $this->proximoDesconto = $proximoDesconto;
+    }
+
+    abstract function calculaDesconto(Orcamento $orcamento) : float;
+}
+```
+> Note que a propriedade `$proximoDesconto` está protegida (para que as subclasses consigam enxergá-la). Note também que `$proximoDesconto` é nullable (veja as marcas de interrogação).
+```php
+// Descontos\DescontoMaisDe5Itens.php
+<?php
+
+namespace Alura\DesignPattern\Descontos;
+
+use Alura\DesignPattern\Orcamento;
+
+class DescontoMaisDe5Itens extends Desconto
+{
+    public function calculaDesconto(Orcamento $orcamento) : float
+    {
+        $desconto = 0;
+        if ($orcamento->quantidadeItens > 5) {
+            $desconto = $orcamento->valor * 0.1;
+        }
+        return $desconto + $this->proximoDesconto->calculaDesconto($orcamento);
+    }
+}
+
+```
+```php
+// Descontos\DescontoMaisDe500Reais.php
+<?php
+
+namespace Alura\DesignPattern\Descontos;
+
+use Alura\DesignPattern\Orcamento;
+
+class DescontoMaisDe500Reais extends Desconto
+{
+    public function calculaDesconto(Orcamento $orcamento) : float
+    {
+        $desconto = 0;
+        if ($orcamento->valor > 500) {
+            $desconto = $orcamento->valor * 0.05;
+        }
+        return $desconto + $this->proximoDesconto->calculaDesconto($orcamento);
+    }
+}
+
+```
+```php
+// Descontos\SemDesconto.php
+<?php
+
+namespace Alura\DesignPattern\Descontos;
+
+use Alura\DesignPattern\Orcamento;
+
+class SemDesconto extends Desconto
+{
+    public function __construct(){
+        parent::__construct(null);
+    }
+
+    public function calculaDesconto(Orcamento $orcamento) : float
+    {
+        return 0;
+    }
+}
+```
+> Note que a classe `SemDesconto` finaliza a cadeia, porque ela recebe nulo no seu construtor.
+```php
+// CalculadoraDeDescontos.php
+<?php
+
+namespace Alura\DesignPattern;
+
+use Alura\DesignPattern\Descontos\DescontoMaisDe500Reais;
+use Alura\DesignPattern\Descontos\DescontoMaisDe5Itens;
+use Alura\DesignPattern\Descontos\SemDesconto;
+
+class CalculadoraDeDescontos
+{
+    public function calculaDescontos(Orcamento $orcamento) : float
+    {
+        $desconto5itens = new DescontoMaisDe5Itens(
+            new DescontoMaisDe500Reais(
+                new SemDesconto()
+            )
+        );
+
+        $desconto = $desconto5itens->calculaDesconto($orcamento);
+
+        return $desconto;
+    }
+}
+```
+> Note que a `CalculadoraDeDescontos` determina qual é a ordem de aplicação do desconto (primeiro os objetos de desconto mais internos retornam valores, depois os descontos mais externos são aplicados).
