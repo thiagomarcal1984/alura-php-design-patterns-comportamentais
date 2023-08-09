@@ -350,3 +350,84 @@ class Ikcv implements Imposto
 }
 ```
 Perceba que a estrutura condicional nas duas classes é semelhante. Na próxima aula veremos como abstrair isso e evitar a duplicação da estrutura do código.
+
+## Extraindo a lógica para métodos privados
+O método `calcula` das classes do IKCV e do ICPP pode ser estruturado como um método de template (template method): uma classe abstrata define um algoritmo genérico que vai referenciar métodos abstratos a serem implementados pelas suas subclasses.
+
+A super classe `ImpostoCom2Aliquotas` vai ter o método de template `calcula`:
+```php
+<?php
+
+namespace Alura\DesignPattern\Impostos;
+
+use Alura\DesignPattern\Orcamento;
+
+abstract class ImpostoCom2Aliquotas implements Imposto
+{
+    public function calcula(Orcamento $orcamento): float
+    {
+        if ($this->deveAplicarTaxaMaxima($orcamento)) {
+            return $this->calculaTaxaMaxima($orcamento);
+        }
+        return $this->calculaTaxaMinima($orcamento);
+    }
+
+    abstract protected function deveAplicarTaxaMaxima(Orcamento $orcamento) : bool;
+    abstract protected function calculaTaxaMaxima(Orcamento $orcamento) : float;
+    abstract protected function calculaTaxaMinima(Orcamento $orcamento) : float;
+}
+```
+E as subclasses do IKCV e do ICPP não precisam declarar o método calcula, apenas estender a superclasse `ImpostoCom2Aliquotas`:
+```php
+// ICPP
+<?php
+
+namespace Alura\DesignPattern\Impostos;
+
+use Alura\DesignPattern\Orcamento;
+
+class Icpp extends ImpostoCom2Aliquotas
+{
+    protected function deveAplicarTaxaMaxima(Orcamento $orcamento): bool
+    {
+        return $orcamento->valor > 500;
+    }
+    
+    protected function calculaTaxaMaxima(Orcamento $orcamento): float
+    {
+        return $orcamento->valor * 0.03;
+    }
+
+    protected function calculaTaxaMinima(Orcamento $orcamento): float
+    {
+        return $orcamento->valor * 0.02;
+    }
+}
+```
+
+```php
+// IKCV
+<?php
+
+namespace Alura\DesignPattern\Impostos;
+
+use Alura\DesignPattern\Orcamento;
+
+class Ikcv extends ImpostoCom2Aliquotas
+{
+    protected function deveAplicarTaxaMaxima(Orcamento $orcamento): bool
+    {
+        return $orcamento->valor > 300 && $orcamento->quantidadeItens > 3;
+    }
+
+    protected function calculaTaxaMaxima(Orcamento $orcamento): float
+    {
+        return $orcamento->valor * 0.04;
+    }
+
+    protected function calculaTaxaMinima(Orcamento $orcamento): float
+    {
+        return $orcamento->valor * 0.025;
+    }
+}
+```
