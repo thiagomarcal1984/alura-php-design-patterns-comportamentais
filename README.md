@@ -306,3 +306,47 @@ Há 3 tipos de classes:
 3. Receptor: executa sua operação e chama o próximo receptor para continuar a atender a requisição.
 
 Leitura complementar sobre o padrão Chain of Responsibility: https://refactoring.guru/design-patterns/chain-of-responsibility
+
+# Template Method
+
+## Cálculos condicionais de impostos
+São propostas duas classes de impostos fictícios IKCV e ICPP:
+```php
+<?php
+
+namespace Alura\DesignPattern\Impostos;
+
+use Alura\DesignPattern\Impostos\Imposto;
+use Alura\DesignPattern\Orcamento;
+
+class Icpp implements Imposto
+{
+    public function calcula(Orcamento $orcamento): float
+    {
+        if ($orcamento->valor > 500) {
+            return $orcamento->valor * 0.03;
+        }
+        return $orcamento->valor * 0.02;
+    }
+}
+```
+```php
+<?php
+
+namespace Alura\DesignPattern\Impostos;
+
+use Alura\DesignPattern\Impostos\Imposto;
+use Alura\DesignPattern\Orcamento;
+
+class Ikcv implements Imposto 
+{
+    public function calcula(Orcamento $orcamento): float
+    {
+        if ($orcamento->valor > 300 && $orcamento->quantidadeItens > 3) {
+            return $orcamento->valor * 0.04;
+        }
+        return $orcamento->valor * 0.025;
+    }
+}
+```
+Perceba que a estrutura condicional nas duas classes é semelhante. Na próxima aula veremos como abstrair isso e evitar a duplicação da estrutura do código.
