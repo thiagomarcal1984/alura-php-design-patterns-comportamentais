@@ -8,7 +8,7 @@
 - [ ] Observer
 - [ ] State
 - [x] Strategy
-- [ ] Template Method
+- [x] Template Method
 - [ ] Visitor
 
 Fonte: https://pt.wikipedia.org/wiki/Padr%C3%A3o_de_projeto_de_software
@@ -431,3 +431,7 @@ class Ikcv extends ImpostoCom2Aliquotas
     }
 }
 ```
+## Falando sobre o padrão
+Perceba que a superclasse definiu os métodos abstratos como protected, de maneira que as subclasses possam conhecer os métodos abstratos, mas que as demais classes não possam conhecer esses mesmos métodos.
+
+Leitura complementar sobre o padrão Template Method: https://refactoring.guru/design-patterns/template-method
