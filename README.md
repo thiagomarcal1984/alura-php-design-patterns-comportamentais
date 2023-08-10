@@ -481,3 +481,174 @@ Há dois problemas nesta abordagem:
 
 1. Strings não possuem comportamento, então precisamos adicionar ifs para realizar o cálculo de desconto extra. Como strings são um tipo primitivo, não poderíamos delegar o cálculo do desconto extra para o valor do `$estadoAtual`. Precisamos adicionar vários ifs na classe de orçamento para isso.
 2. É muito fácil digitar o nome de um estado errado e por serem simples strings, a IDE não nos ajudaria. Ter valores com significado no domínio apenas como string é um problema pois, a qualquer momento, podemos digitar o texto errado e isso pode causar uma grande dor de cabeça. Não é um problema fácil de debugar e a IDE não nos ajuda neste caso.
+
+## Extraindo classes de estado
+1. Criaremos a superclasse `EstadoOrcamento`, que vai encapsular o estado e conter as operações padrão de mudança de estado.
+2. A classe `Orcamento` vai controlar a mudança de estado ao chamar cada método da classe `EstadoOrcamento`.
+3. As subclasses de `EstadoOrcamento` vão aplicar os descontos necessários e redefinir as operações padrão definidas na superclasse.
+
+```php
+// EstadoOrcamento
+<?php
+
+namespace Alura\DesignPattern\EstadosOrcamento;
+
+use Alura\DesignPattern\Orcamento;
+
+abstract class EstadoOrcamento
+{
+    /**
+     * @throws \DomainException
+     */
+    abstract public function calculaDescontoExtra(Orcamento $orcamento) : float;
+
+    /**
+     * @throws \DomainException
+     */
+    public function aprova(Orcamento $orcamento) 
+    {
+        throw new \DomainException('Este orçamento não pode ser aprovado.');
+    }
+    /**
+     * @throws \DomainException
+     */
+    public function reprova(Orcamento $orcamento) 
+    {
+        throw new \DomainException('Este orçamento não pode ser reprovado.');
+    }
+    /**
+     * @throws \DomainException
+     */
+    public function finaliza(Orcamento $orcamento) 
+    {
+        throw new \DomainException('Este orçamento não pode ser finalizado.');
+    }
+}
+```
+```php
+// Orcamento
+<?php
+
+namespace Alura\DesignPattern;
+
+use Alura\DesignPattern\EstadosOrcamento\EstadoOrcamento;
+use Alura\DesignPattern\EstadosOrcamento\EmAprovacao;
+
+class Orcamento
+{
+    public int $quantidadeItens;
+    public float $valor;
+    public EstadoOrcamento $estadoAtual;
+    
+    public function __construct()
+    {
+        $this->estadoAtual = new EmAprovacao();
+    }
+
+    public function aplicaDescontoExtra()
+    {
+        $this->valor -= $this->estadoAtual->calculaDescontoExtra($this);
+    }
+
+    public function aprova()
+    {
+        $this->estadoAtual->aprova($this);
+    }
+
+    public function reprova()
+    {
+        $this->estadoAtual->reprova($this);
+    }
+
+    public function finaliza()
+    {
+        $this->estadoAtual->finaliza($this);
+    }
+}
+```
+```php
+// Aprovado
+<?php
+
+namespace Alura\DesignPattern\EstadosOrcamento;
+
+use Alura\DesignPattern\Orcamento;
+
+class Aprovado extends EstadoOrcamento
+{
+    public function calculaDescontoExtra(Orcamento $orcamento) : float
+    {
+        return $orcamento->valor * 0.02;
+    }
+
+    public function finaliza(Orcamento $orcamento)
+    {
+        $orcamento->estadoAtual = new Finalizado();
+    }
+}
+```
+```php
+// Reprovado
+<?php
+
+namespace Alura\DesignPattern\EstadosOrcamento;
+
+use Alura\DesignPattern\Orcamento;
+
+class Reprovado extends EstadoOrcamento
+{
+    public function calculaDescontoExtra(Orcamento $orcamento) : float
+    {
+        throw new \DomainException('Um orçamento reprovado não pode receber desconto.'); 
+    }
+
+    public function finaliza(Orcamento $orcamento)
+    {
+        $orcamento->estadoAtual = new Finalizado();
+    }
+}
+```
+
+```php
+// EmAprovacao
+<?php
+
+namespace Alura\DesignPattern\EstadosOrcamento;
+
+use Alura\DesignPattern\Orcamento;
+
+class EmAprovacao extends EstadoOrcamento
+{
+    public function calculaDescontoExtra(Orcamento $orcamento) : float
+    {
+        return $orcamento->valor * 0.05;
+    }
+
+    public function aprova(Orcamento $orcamento)
+    {
+        $orcamento->estadoAtual = new Aprovado();
+    }
+    
+    public function reprova(Orcamento $orcamento)
+    {
+        $orcamento->estadoAtual = new Reprovado();
+    }
+}
+```
+
+```php
+// Finalizado
+<?php
+
+namespace Alura\DesignPattern\EstadosOrcamento;
+
+use Alura\DesignPattern\Orcamento;
+
+class Finalizado extends EstadoOrcamento
+{
+    public function calculaDescontoExtra(Orcamento $orcamento) : float
+    {
+        throw new \DomainException('Um orçamento finalizado não pode receber desconto.'); 
+    }
+}
+```
