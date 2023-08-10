@@ -472,3 +472,12 @@ class Orcamento
     }
 }
 ```
+
+## Valores em string
+
+Ao começar a tratar sobre regras dos estados, foi implementada a verificação do estado atual de um orçamento, utilizando strings.
+
+Há dois problemas nesta abordagem:
+
+1. Strings não possuem comportamento, então precisamos adicionar ifs para realizar o cálculo de desconto extra. Como strings são um tipo primitivo, não poderíamos delegar o cálculo do desconto extra para o valor do `$estadoAtual`. Precisamos adicionar vários ifs na classe de orçamento para isso.
+2. É muito fácil digitar o nome de um estado errado e por serem simples strings, a IDE não nos ajudaria. Ter valores com significado no domínio apenas como string é um problema pois, a qualquer momento, podemos digitar o texto errado e isso pode causar uma grande dor de cabeça. Não é um problema fácil de debugar e a IDE não nos ajuda neste caso.
