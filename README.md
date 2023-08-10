@@ -435,3 +435,40 @@ class Ikcv extends ImpostoCom2Aliquotas
 Perceba que a superclasse definiu os métodos abstratos como protected, de maneira que as subclasses possam conhecer os métodos abstratos, mas que as demais classes não possam conhecer esses mesmos métodos.
 
 Leitura complementar sobre o padrão Template Method: https://refactoring.guru/design-patterns/template-method
+
+# State
+
+## Adicionando estados ao orçamento
+A lógica da função `calculaDescontoExtra` da classe Orçamento começa a ficar muito complexa, pois conhecer o conteúdo da string `estadoAtual` aumenta muito o acomplamento:
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class Orcamento
+{
+    public int $quantidadeItens;
+    public float $valor;
+    public string $estadoAtual;
+
+    public function aplicaDescontoExtra()
+    {
+        $this->valor -= $this->calculaDescontoExtra();
+    }
+
+    public function calculaDescontoExtra() : float
+    {
+        if ($this->estadoAtual == 'EM APROVACAO') {
+            return $this->valor * 0.05;
+        }
+        
+        if ($this->estadoAtual == 'APROVADO') {
+            return $this->valor * 0.02;
+        }
+
+        throw new \DomainException(
+            'Orçamentos reprovados e finalizados não podem receber descontos.'
+        ); 
+    }
+}
+```
