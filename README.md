@@ -652,3 +652,10 @@ class Finalizado extends EstadoOrcamento
     }
 }
 ```
+
+## Princípio de Substituição de Liskov
+Superclasses de estado podem conter métodos que apenas lançam exceção, o que pode ferir o princípio de substituição de Liskov.
+
+Em resumo, o princípio de Substituição de Liskov diz que, uma vez que uma assinatura de método for definida numa superclasse, suas subclasses DEVEM se comportar conforme proposto, e não lançar exceções.
+
+Leitura complementar sobre o padrão State: https://refactoring.guru/design-patterns/state
