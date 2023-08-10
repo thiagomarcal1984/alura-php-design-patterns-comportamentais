@@ -6,7 +6,7 @@
 - [ ] Mediator
 - [ ] Memento
 - [ ] Observer
-- [ ] State
+- [x] State
 - [x] Strategy
 - [x] Template Method
 - [ ] Visitor
@@ -659,3 +659,47 @@ Superclasses de estado podem conter métodos que apenas lançam exceção, o que
 Em resumo, o princípio de Substituição de Liskov diz que, uma vez que uma assinatura de método for definida numa superclasse, suas subclasses DEVEM se comportar conforme proposto, e não lançar exceções.
 
 Leitura complementar sobre o padrão State: https://refactoring.guru/design-patterns/state
+
+# Command
+
+## Gerando um pedido
+Criamos uma classe `Pedido`:
+
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class Pedido
+{
+    public string $nomeCliente;
+    public \DateTimeInterface $dataFinalizacao;
+    public Orcamento $orcamento;
+}
+```
+
+E criamos uma CLI para preencher um pedido: 
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Alura\DesignPattern\{Orcamento, Pedido};
+
+// $argv contém os valores fornecidos após o nome do arquivo .php:
+// php gera-pedido.php 1200.5 7 'Teste'
+$valorOrcamento = $argv[1];
+$numeroItens = $argv[2];
+$nomeCliente = $argv[3];
+
+$orcamento = new Orcamento();
+$orcamento->quantidadeItens = $numeroItens;
+$orcamento->valor = $valorOrcamento;
+
+$pedido = new Pedido();
+$pedido->dataFinalizacao = new \DateTimeImmutable();
+$pedido->nomeCliente = $nomeCliente;
+$pedido->orcamento = $orcamento;
+
+var_dump($pedido);
+```
+Mas e se precisássemos de fazer o preenchimento em uma página Web? A tendência seria copiar/colar o código e adaptar. Porém isso induz a duplicação de código.
