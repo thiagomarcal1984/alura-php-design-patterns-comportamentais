@@ -703,3 +703,69 @@ $pedido->orcamento = $orcamento;
 var_dump($pedido);
 ```
 Mas e se precisássemos de fazer o preenchimento em uma página Web? A tendência seria copiar/colar o código e adaptar. Porém isso induz a duplicação de código.
+
+## Criando um Command
+A interface `Command`:
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+interface Command
+{
+    public function execute();
+}
+```
+Uma implementação de `Command` (classe `GerarPedido`):
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class GerarPedido implements Command
+{
+    private float $valorOrcamento;
+    private int $numeroItens;
+    private string $nomeCliente;
+    
+    public function __construct(
+        float $valorOrcamento,
+        int $numeroItens,
+        string $nomeCliente
+    )
+    {
+        $this->valorOrcamento = $valorOrcamento;
+        $this->numeroItens = $numeroItens;
+        $this->nomeCliente = $nomeCliente;
+    }
+
+    public function execute() 
+    {
+        $orcamento = new Orcamento();
+        $orcamento->quantidadeItens = $this->numeroItens;
+        $orcamento->valor = $this->valorOrcamento;
+        
+        $pedido = new Pedido();
+        $pedido->dataFinalizacao = new \DateTimeImmutable();
+        $pedido->nomeCliente = $this->nomeCliente;
+        $pedido->orcamento = $orcamento;
+
+        var_dump($pedido);
+    }
+}
+```
+A invocação de `GerarPedido` no script `gera-pedido.php`
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Alura\DesignPattern\{GerarPedido, Orcamento, Pedido};
+
+$valorOrcamento = $argv[1];
+$numeroItens = $argv[2];
+$nomeCliente = $argv[3];
+
+$gerarPedido = new GerarPedido($valorOrcamento, $numeroItens, $nomeCliente);
+$gerarPedido->execute();
+```
+Um detalhe: os dados que representam o comando e o método que usa esses dados estão declarados na mesma classe de comando (`GerarPedido`). Isso é conveniente?
