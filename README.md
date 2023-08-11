@@ -1,6 +1,6 @@
 # Padrões comportamentais (Gang of Four)
 - [x] Chain of Responsibility
-- [ ] Command
+- [x] Command
 - [ ] Interpreter
 - [ ] Iterator
 - [ ] Mediator
@@ -769,3 +769,96 @@ $gerarPedido = new GerarPedido($valorOrcamento, $numeroItens, $nomeCliente);
 $gerarPedido->execute();
 ```
 Um detalhe: os dados que representam o comando e o método que usa esses dados estão declarados na mesma classe de comando (`GerarPedido`). Isso é conveniente?
+
+## Command Handlers
+Com a lógica atual para desenvolvimento de software, é interessante separar a representação dos dados da classe que utiliza esses dados para reduzir o acoplamento. Assim, usamos um `Command` para conter a representação e um `CommandHandler` para operar sobre essa representação.
+
+```php
+// GerarPedido (alterada)
+<?php
+
+namespace Alura\DesignPattern;
+
+class GerarPedido
+{
+    private float $valorOrcamento;
+    private int $numeroItens;
+    private string $nomeCliente;
+    
+    public function __construct(
+        float $valorOrcamento,
+        int $numeroItens,
+        string $nomeCliente
+    )
+    {
+        $this->valorOrcamento = $valorOrcamento;
+        $this->numeroItens = $numeroItens;
+        $this->nomeCliente = $nomeCliente;
+    }
+    
+    // Getters
+    public function getValorOrcamento():  float
+    {
+        return $this->valorOrcamento;
+    } 
+    public function getNumeroItens():  int
+    {
+        return $this->numeroItens;
+    } 
+    public function getNomeCliente():  string
+    {
+        return $this->nomeCliente;
+    } 
+}
+```
+
+```php
+// GerarPedidoHandler
+<?php
+
+namespace Alura\DesignPattern;
+
+class GerarPedidoHandler
+{
+    public function __construct(/* PedidoRepository, MailService */)
+    {
+        // Repare que os parâmetros contém os objetos injetados por DI.
+    }
+
+    public function execute(GerarPedido $gerarPedido)
+    {
+        $orcamento = new Orcamento();
+        $orcamento->quantidadeItens = $gerarPedido->getNumeroItens();
+        $orcamento->valor = $gerarPedido->getValorOrcamento();
+        
+        $pedido = new Pedido();
+        $pedido->dataFinalizacao = new \DateTimeImmutable();
+        $pedido->nomeCliente = $gerarPedido->getNomeCliente();
+        $pedido->orcamento = $orcamento;
+
+        // PedidoRepository
+        echo "Cria pedido no banco de dados" . PHP_EOL;
+        
+        // MailService
+        echo "Envia e-mail para o cliente" . PHP_EOL;
+    }
+}
+```
+
+```php
+// gera-pedido.php (alterado)
+<?php
+require 'vendor/autoload.php';
+
+use Alura\DesignPattern\{GerarPedido, GerarPedidoHandler, Orcamento, Pedido};
+
+$valorOrcamento = $argv[1];
+$numeroItens = $argv[2];
+$nomeCliente = $argv[3];
+
+$gerarPedido = new GerarPedido($valorOrcamento, $numeroItens, $nomeCliente);
+$gerarPedidoHandler = new GerarPedidoHandler();
+$gerarPedidoHandler->execute($gerarPedido);
+```
+
+Leitura complementar sobre o padrão Command: https://refactoring.guru/design-patterns/command
