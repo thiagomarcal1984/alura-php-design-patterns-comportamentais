@@ -905,3 +905,82 @@ class GerarPedidoHandler
     }
 }
 ```
+## Adicionando ações como observers
+Neste padrão é importante o conceito de Subject (sujeito) e de Observers (observadores do sujeito). Certas ações no sujeito disparam uma ação em cada observador "cadastrado" nesse sujeito.
+
+A interface do observador:
+```php
+<?php
+
+namespace Alura\DesignPattern\AcoesAoGerarPedido;
+
+use Alura\DesignPattern\Pedido;
+
+interface AcaoAposGerarPedido
+{
+    public function executarAcao(Pedido $pedido) : void;
+}
+```
+Código do sujeito `GerarPedidoHandler`:
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+use Alura\DesignPattern\AcoesAoGerarPedido\AcaoAposGerarPedido;
+
+class GerarPedidoHandler
+{
+        /** @var AcaoAposGerarPedido[] $acoesAposGerarPedido */
+        private array $acoesAposGerarPedido = [];
+
+    public function __construct(/* PedidoRepository, MailService */)
+    {
+        // Repare que os parâmetros contém os objetos injetados por DI.
+    }
+
+    public function adicionarAcaoAoGerarPedido(AcaoAposGerarPedido $acao)
+    {
+        $this->acoesAposGerarPedido[] = $acao;
+    }
+
+    public function execute(GerarPedido $gerarPedido)
+    {
+        $orcamento = new Orcamento();
+        $orcamento->quantidadeItens = $gerarPedido->getNumeroItens();
+        $orcamento->valor = $gerarPedido->getValorOrcamento();
+        
+        $pedido = new Pedido();
+        $pedido->dataFinalizacao = new \DateTimeImmutable();
+        $pedido->nomeCliente = $gerarPedido->getNomeCliente();
+        $pedido->orcamento = $orcamento;
+
+        // Remoção das redundâncias.
+        foreach($this->acoesAposGerarPedido as $acao) {
+            $acao->executarAcao($pedido);
+        }
+    }
+}
+```
+Código que invoca o sujeito (`gera-pedido.php`): 
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Alura\DesignPattern\{GerarPedido, GerarPedidoHandler, Orcamento, Pedido};
+use Alura\DesignPattern\AcoesAoGerarPedido\CriarPedidoNoBanco;
+use Alura\DesignPattern\AcoesAoGerarPedido\EnviarPedidoPorEmail;
+use Alura\DesignPattern\AcoesAoGerarPedido\LogGerarPedido;
+
+$valorOrcamento = $argv[1];
+$numeroItens = $argv[2];
+$nomeCliente = $argv[3];
+
+$gerarPedido = new GerarPedido($valorOrcamento, $numeroItens, $nomeCliente);
+$gerarPedidoHandler = new GerarPedidoHandler();
+$gerarPedidoHandler->adicionarAcaoAoGerarPedido(new CriarPedidoNoBanco());
+$gerarPedidoHandler->adicionarAcaoAoGerarPedido(new EnviarPedidoPorEmail());
+$gerarPedidoHandler->adicionarAcaoAoGerarPedido(new LogGerarPedido());
+$gerarPedidoHandler->execute($gerarPedido);
+```
+> Note que as classes `CriarPedidoNoBanco`, `EnviarPedidoPorEmail` e `LogGerarPedido` implementam a interface observer chamada `AcaoAposGerarPedido`.
