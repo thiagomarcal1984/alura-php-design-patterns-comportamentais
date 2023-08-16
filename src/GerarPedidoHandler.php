@@ -2,6 +2,10 @@
 
 namespace Alura\DesignPattern;
 
+use Alura\DesignPattern\AcoesAoGerarPedido\CriarPedidoNoBanco;
+use Alura\DesignPattern\AcoesAoGerarPedido\EnviarPedidoPorEmail;
+use Alura\DesignPattern\AcoesAoGerarPedido\LogGerarPedido;
+
 class GerarPedidoHandler
 {
     public function __construct(/* PedidoRepository, MailService */)
@@ -20,10 +24,13 @@ class GerarPedidoHandler
         $pedido->nomeCliente = $gerarPedido->getNomeCliente();
         $pedido->orcamento = $orcamento;
 
-        // PedidoRepository
-        echo "Cria pedido no banco de dados" . PHP_EOL;
+        $pedidoRepository = new CriarPedidoNoBanco();
+        $logGerarPedido = new LogGerarPedido();
+        $enviarPedidoPorEmail = new EnviarPedidoPorEmail();
         
-        // MailService
-        echo "Envia e-mail para o cliente" . PHP_EOL;
+        // Perceba a redundância na execução do método `executarAcao` em cada classe.
+        $pedidoRepository->executarAcao($pedido);
+        $logGerarPedido->executarAcao($pedido);
+        $enviarPedidoPorEmail->executarAcao($pedido);
     }
 }
