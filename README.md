@@ -5,7 +5,7 @@
 - [ ] Iterator
 - [ ] Mediator
 - [ ] Memento
-- [ ] Observer
+- [x] Observer
 - [x] State
 - [x] Strategy
 - [x] Template Method
@@ -984,3 +984,101 @@ $gerarPedidoHandler->adicionarAcaoAoGerarPedido(new LogGerarPedido());
 $gerarPedidoHandler->execute($gerarPedido);
 ```
 > Note que as classes `CriarPedidoNoBanco`, `EnviarPedidoPorEmail` e `LogGerarPedido` implementam a interface observer chamada `AcaoAposGerarPedido`.
+
+## Observers no PHP
+O PHP tem a interface `SplSubject`, que representa o sujeito que será observado (ele força a implementação dos métodos `attach`, `detach` e `notify`).
+
+O PHP também tem a interface `SplObserver`, que representa os obseravadores (ele força a implementação do método `update`).
+
+Código do subject: 
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+use Alura\DesignPattern\AcoesAoGerarPedido\AcaoAposGerarPedido;
+use SplObserver;
+
+class GerarPedidoHandler implements \SplSubject
+{
+    /** @var \SplObserver[] $acoesAposGerarPedido */
+    private array $acoesAposGerarPedido = [];
+
+    public Pedido $pedido;
+
+    public function __construct(/* PedidoRepository, MailService */)
+    {
+        // Repare que os parâmetros contém os objetos injetados por DI.
+    }
+
+    public function attach(SplObserver $observer): void
+    {
+        $this->acoesAposGerarPedido[] = $observer;
+    }
+    
+    public function detach(SplObserver $observer): void
+    {
+        // Remover um observer da lista de observers.
+    }
+
+    public function notify(): void
+    {
+        foreach($this->acoesAposGerarPedido as $acao) {
+            $acao->update($this);
+        }
+    }
+    
+    public function execute(GerarPedido $gerarPedido)
+    {
+        $orcamento = new Orcamento();
+        $orcamento->quantidadeItens = $gerarPedido->getNumeroItens();
+        $orcamento->valor = $gerarPedido->getValorOrcamento();
+        
+        $this->pedido = new Pedido();
+        $this->pedido->nomeCliente = "Teste";
+        $this->notify();
+    }
+}
+```
+Código do observer `EnviarPedidoPorEmail`:
+```php
+<?php
+
+namespace Alura\DesignPattern\AcoesAoGerarPedido;
+
+use Alura\DesignPattern\Pedido;
+
+class EnviarPedidoPorEmail implements \SplObserver
+{
+    public function update(\SplSubject $subject): void
+    {
+        echo "Nome do cliente: " . $subject->pedido->nomeCliente . ". ";
+        echo "Enviando e-mail do pedido gerado" . PHP_EOL;
+    }
+}
+```
+Código que invoca o subject (`gera-pedido.php`): 
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Alura\DesignPattern\{GerarPedido, GerarPedidoHandler, Orcamento, Pedido};
+use Alura\DesignPattern\AcoesAoGerarPedido\CriarPedidoNoBanco;
+use Alura\DesignPattern\AcoesAoGerarPedido\EnviarPedidoPorEmail;
+use Alura\DesignPattern\AcoesAoGerarPedido\LogGerarPedido;
+
+$valorOrcamento = $argv[1];
+$numeroItens = $argv[2];
+$nomeCliente = $argv[3];
+
+$gerarPedido = new GerarPedido($valorOrcamento, $numeroItens, $nomeCliente);
+$gerarPedidoHandler = new GerarPedidoHandler();
+$gerarPedidoHandler->attach(new CriarPedidoNoBanco());
+$gerarPedidoHandler->attach(new EnviarPedidoPorEmail());
+$gerarPedidoHandler->attach(new LogGerarPedido());
+$gerarPedidoHandler->execute($gerarPedido);
+```
+
+Leitura complementar sobre o padrão Observer: https://refactoring.guru/design-patterns/observer
+
+Já para conhecer melhor as interfaces do próprio PHP: https://www.php.net/manual/pt_BR/class.splobserver.php.
