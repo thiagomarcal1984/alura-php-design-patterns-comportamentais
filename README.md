@@ -1082,3 +1082,50 @@ $gerarPedidoHandler->execute($gerarPedido);
 Leitura complementar sobre o padrão Observer: https://refactoring.guru/design-patterns/observer
 
 Já para conhecer melhor as interfaces do próprio PHP: https://www.php.net/manual/pt_BR/class.splobserver.php.
+
+# Iterator
+## Visualizando uma lista de orçamentos
+Uma boa prática é criar coleções que forcem a tipagem. No PHP isso é feito criando uma classe de coleção.
+
+O código abaixo ainda não implementou essa classe, e quebra durante a execução:
+
+```php
+// lista-orcamentos.php
+<?php
+
+require_once 'vendor/autoload.php';
+
+use Alura\DesignPattern\Orcamento;
+
+$listaOrcamentos = [];
+
+$orcamento1 = new Orcamento();
+$orcamento1->quantidadeItens = 7;
+$orcamento1->aprova();
+$orcamento1->valor = 1500.75;
+
+$orcamento2 = new Orcamento();
+$orcamento2->quantidadeItens = 3;
+$orcamento2->reprova();
+$orcamento2->valor = 150;
+
+$orcamento3 = new Orcamento();
+$orcamento3->quantidadeItens = 5;
+$orcamento3->aprova();
+$orcamento3->finaliza();
+$orcamento3->valor = 1350;
+
+$listaOrcamentos = [
+    $orcamento1, 
+    $orcamento2,
+    $orcamento3,
+    'Esta string quebra a iteração na lista.'
+];
+
+foreach ($listaOrcamentos as $orcamento) {
+    echo  "Valor: " . $orcamento->valor . PHP_EOL;
+    echo "Estado: " . get_class($orcamento->estadoAtual) . PHP_EOL;
+    echo  "Qtde. Itens: " . $orcamento->quantidadeItens . PHP_EOL;
+    echo PHP_EOL;
+}
+```
