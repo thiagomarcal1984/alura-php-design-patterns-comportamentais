@@ -2,7 +2,7 @@
 - [x] Chain of Responsibility
 - [x] Command
 - [ ] Interpreter
-- [ ] Iterator
+- [x] Iterator
 - [ ] Mediator
 - [ ] Memento
 - [x] Observer
@@ -1198,3 +1198,95 @@ foreach ($listaOrcamentos->orcamentos() as $orcamento) {
 }
 ```
 > O problema dessa abordagem é o acesso direto ao array dentro do `foreach`. A ideia seria obter um orçamento na medida em que iteramos o array.
+
+## Permitindo navegar na lista com Iterator
+O PHP tem uma interface chamada `IteratorAggregate`, que força a implementação do método `getIterator`, o qual retorna um `Traversable`. A classe `ArrayIterator` é uma das implementações existentes da interface `Traversable`.
+
+Classe `ListaDeOrcamentos`:
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class ListaDeOrcamentos implements \IteratorAggregate
+{
+    /** @var Orcamento[] */
+    private array $orcamentos;
+
+    public function __construct()
+    {
+        $this->orcamentos = [];
+    }
+
+    public function addOrcamento(Orcamento $orcamento)
+    {
+        $this->orcamentos[] = $orcamento;
+    }
+
+    public function getIterator() : \Traversable
+    {
+        return new \ArrayIterator($this->orcamentos);
+    }
+}
+```
+> A lista de orçamentos pode implementar a interface `\Iterator`, mas ela força a implementação de 4 métodos: `current`, `next`, `key`, `valid` e `rewind`. Implementar a interface `\IteratorAggregate` força apenas a implementação do método `getIterator`, que é base para qualquer `foreach` e encapsula a coleção que será percorrida.
+
+
+Invocação da lista no arquivo `lista-orcamentos.php`:
+```php
+<?php
+
+require_once 'vendor/autoload.php';
+
+use Alura\DesignPattern\ListaDeOrcamentos;
+use Alura\DesignPattern\Orcamento;
+
+$listaOrcamentos = [];
+
+$orcamento1 = new Orcamento();
+$orcamento1->quantidadeItens = 7;
+$orcamento1->aprova();
+$orcamento1->valor = 1500.75;
+
+$orcamento2 = new Orcamento();
+$orcamento2->quantidadeItens = 3;
+$orcamento2->reprova();
+$orcamento2->valor = 150;
+
+$orcamento3 = new Orcamento();
+$orcamento3->quantidadeItens = 5;
+$orcamento3->aprova();
+$orcamento3->finaliza();
+$orcamento3->valor = 1350;
+
+$listaOrcamentos = new ListaDeOrcamentos();
+
+$listaOrcamentos->addOrcamento($orcamento1);
+$listaOrcamentos->addOrcamento($orcamento2);
+$listaOrcamentos->addOrcamento($orcamento3);
+
+foreach ($listaOrcamentos as $orcamento) {
+    echo  "Valor: " . $orcamento->valor . PHP_EOL;
+    echo "Estado: " . get_class($orcamento->estadoAtual) . PHP_EOL;
+    echo  "Qtde. Itens: " . $orcamento->quantidadeItens . PHP_EOL;
+    echo PHP_EOL;
+}
+```
+> Note que a variável `$listaOrcamentos` no `foreach` não invocou o método `getIterator`. A invocação é implícita no `foreach`.
+
+> Exemplo de código que filtra apenas os orçamentos finalizados:
+> ```php
+> public function orcamentosFinalizados(): array
+> {
+>     return array_filter(
+>         $this->orcamentos,
+>         fn (Orcamento $orcamento) => $orcamento->estadoAtual instanceof Finalizado
+>     );
+> }
+> ```
+
+Leitura complementar sobre o padrão Iterator: https://refactoring.guru/design-patterns/iterator
+
+Caso queira ler mais sobre os Iterators disponíveis no PHP:
+- https://www.php.net/manual/pt_BR/class.iterator.php
+- https://www.php.net/manual/pt_BR/spl.iterators.php
