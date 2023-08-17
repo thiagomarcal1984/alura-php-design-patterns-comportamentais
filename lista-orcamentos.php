@@ -2,6 +2,7 @@
 
 require_once 'vendor/autoload.php';
 
+use Alura\DesignPattern\ListaDeOrcamentos;
 use Alura\DesignPattern\Orcamento;
 
 $listaOrcamentos = [];
@@ -22,14 +23,13 @@ $orcamento3->aprova();
 $orcamento3->finaliza();
 $orcamento3->valor = 1350;
 
-$listaOrcamentos = [
-    $orcamento1, 
-    $orcamento2,
-    $orcamento3,
-    'Esta string quebra a iteração na lista.'
-];
+$listaOrcamentos = new ListaDeOrcamentos();
 
-foreach ($listaOrcamentos as $orcamento) {
+$listaOrcamentos->addOrcamento($orcamento1);
+$listaOrcamentos->addOrcamento($orcamento2);
+$listaOrcamentos->addOrcamento($orcamento3);
+
+foreach ($listaOrcamentos->orcamentos() as $orcamento) {
     echo  "Valor: " . $orcamento->valor . PHP_EOL;
     echo "Estado: " . get_class($orcamento->estadoAtual) . PHP_EOL;
     echo  "Qtde. Itens: " . $orcamento->quantidadeItens . PHP_EOL;

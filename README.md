@@ -1129,3 +1129,72 @@ foreach ($listaOrcamentos as $orcamento) {
     echo PHP_EOL;
 }
 ```
+## Representando uma coleção de orçamentos
+Criação da classe de lista de orçamentos:
+```php
+<?php
+
+namespace Alura\DesignPattern;
+
+class ListaDeOrcamentos
+{
+    /** @var Orcamento[] */
+    private array $orcamentos;
+
+    public function __construct()
+    {
+        $this->orcamentos = [];
+    }
+
+    public function addOrcamento(Orcamento $orcamento)
+    {
+        $this->orcamentos[] = $orcamento;
+    }
+
+    public function orcamentos() : array
+    {
+        return $this->orcamentos;
+    }
+}
+```
+Uso da classe no arquivo `lista-orcamentos.php`:
+```php
+<?php
+
+require_once 'vendor/autoload.php';
+
+use Alura\DesignPattern\ListaDeOrcamentos;
+use Alura\DesignPattern\Orcamento;
+
+$listaOrcamentos = [];
+
+$orcamento1 = new Orcamento();
+$orcamento1->quantidadeItens = 7;
+$orcamento1->aprova();
+$orcamento1->valor = 1500.75;
+
+$orcamento2 = new Orcamento();
+$orcamento2->quantidadeItens = 3;
+$orcamento2->reprova();
+$orcamento2->valor = 150;
+
+$orcamento3 = new Orcamento();
+$orcamento3->quantidadeItens = 5;
+$orcamento3->aprova();
+$orcamento3->finaliza();
+$orcamento3->valor = 1350;
+
+$listaOrcamentos = new ListaDeOrcamentos();
+
+$listaOrcamentos->addOrcamento($orcamento1);
+$listaOrcamentos->addOrcamento($orcamento2);
+$listaOrcamentos->addOrcamento($orcamento3);
+
+foreach ($listaOrcamentos->orcamentos() as $orcamento) {
+    echo  "Valor: " . $orcamento->valor . PHP_EOL;
+    echo "Estado: " . get_class($orcamento->estadoAtual) . PHP_EOL;
+    echo  "Qtde. Itens: " . $orcamento->quantidadeItens . PHP_EOL;
+    echo PHP_EOL;
+}
+```
+> O problema dessa abordagem é o acesso direto ao array dentro do `foreach`. A ideia seria obter um orçamento na medida em que iteramos o array.
